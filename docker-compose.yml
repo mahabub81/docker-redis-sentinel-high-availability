@@ -1,0 +1,118 @@
+version: '3'
+services:
+  master:
+    container_name: master
+    build: 
+      context: ./config/server
+      args:
+        IP_ADDR: 172.16.16.2
+        BIND_IP: 0.0.0.0
+        BIND_PORT: 6379
+        PASS: "12345678"
+        ROLE: "master"
+    volumes:
+      - ./log:/log
+    ports:
+      - "7379:6379"
+    networks:
+      app_net:
+        ipv4_address: 172.16.16.2
+
+  slave:
+    container_name: slave
+    build: 
+      context: ./config/server
+      args:
+        IP_ADDR: 172.16.16.3
+        BIND_IP: 0.0.0.0
+        BIND_PORT: 6379
+        PASS: "12345678"
+        MASTER_IP: 172.16.16.2
+        MASTER_PORT: 6379
+        ROLE: "slave"
+    volumes:
+      - ./log:/log
+      
+    ports:
+      - "7380:6379"
+    networks:
+      app_net:
+        ipv4_address: 172.16.16.3
+
+  sentinel_one:
+    container_name: sentinel_one
+    build: 
+      context: ./config/sentinel
+      args:
+        IP_ADDR: 172.16.16.4
+        BIND_IP: 0.0.0.0
+        BIND_PORT: 26379
+        PASS: "12345678"
+        MASTER_IP: 172.16.16.2
+        MASTER_PORT: 6379
+        QORUM: 2
+        DOWN_AFTER_MS: 10000
+        FAILOVER_TIME_OUT: 10000
+    volumes:
+      - ./log:/log
+      
+    ports:
+      - "27380:26379"
+    networks:
+      app_net:
+        ipv4_address: 172.16.16.4
+
+  sentinel_two:
+    container_name: sentinel_two
+    build: 
+      context: ./config/sentinel
+      args:
+        IP_ADDR: 172.16.16.5
+        BIND_IP: 0.0.0.0
+        BIND_PORT: 26379
+        PASS: "12345678"
+        MASTER_IP: 172.16.16.2
+        MASTER_PORT: 6379
+        QORUM: 2
+        DOWN_AFTER_MS: 10000
+        FAILOVER_TIME_OUT: 10000
+    volumes:
+      - ./log:/log
+      
+    ports:
+      - "27381:26379"
+    networks:
+      app_net:
+        ipv4_address: 172.16.16.5
+
+
+  sentinel_three:
+    container_name: sentinel_three
+    build: 
+      context: ./config/sentinel
+      args:
+        IP_ADDR: 172.16.16.6
+        BIND_IP: 0.0.0.0
+        BIND_PORT: 26379
+        PASS: "12345678"
+        MASTER_IP: 172.16.16.2
+        MASTER_PORT: 6379
+        QORUM: 2
+        DOWN_AFTER_MS: 10000
+        FAILOVER_TIME_OUT: 10000
+    volumes:
+      - ./log:/log
+      
+    ports:
+      - "27382:26379"
+    networks:
+      app_net:
+        ipv4_address: 172.16.16.6
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.16.0/28
